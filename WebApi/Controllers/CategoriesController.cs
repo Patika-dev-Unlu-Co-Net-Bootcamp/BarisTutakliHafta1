@@ -23,8 +23,8 @@ namespace WebApi.Controllers
         public IActionResult Get(int id)
         {
 
-            Category result = InMemoryDal.MemoryDal.CategoryList.SingleOrDefault(p => p.Id == id);
-            if (result != null)
+            var result = CheckByIdIfItemExist(id);
+            if (result is not null)
             {
                 return Ok(result);
             }
@@ -35,18 +35,12 @@ namespace WebApi.Controllers
         [HttpPost()]
         public IActionResult Create([FromBody] Category category)
         {
-            bool check = true;
-            InMemoryDal.MemoryDal.CategoryList.ForEach(p =>
-            {
-                if (p.Id == category.Id)
-                {
-                    check = false;
-                }
-            });
-            if (!check)
+            var result = CheckByIdIfItemExist(category.Id);
+            if (result is not null)
             {
                 return BadRequest();
             }
+
             try
             {
                 InMemoryDal.MemoryDal.CategoryList.Add(category);
@@ -54,76 +48,98 @@ namespace WebApi.Controllers
             catch (Exception)
             {
 
-                return StatusCode(500);//500
+                return StatusCode(500); //500
             }
+            return Created("Index", new { message = "Category added.", time = DateTime.Now });//201
 
-            return Created("Index", new { time = DateTime.Now });//201
 
         }
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] Category category)
         {
-            bool check = true;
-            InMemoryDal.MemoryDal.CategoryList.ForEach(p =>
-            {
-                if (p.Id == category.Id)
-                {
-
-                    p.CategoryName = category.CategoryName;
-                    p.Description = category.Description;
-                 
-                }
-            });
-            if (!check)
+            var result = CheckByIdIfItemExist(category.Id);
+            if (CheckByIdIfItemExist(category.Id) is null)
             {
                 return NotFound();
             }
+
+            try
+            {
+                
+                result.CategoryName = category.CategoryName;
+                result.Description = category.Description;
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);
+            }
+
             return Ok();
+           
 
         }
 
         [HttpPatch("{id}")]
         public IActionResult Update([FromBody] Category category)
         {
-            bool check = true;
-            InMemoryDal.MemoryDal.CategoryList.ForEach(p =>
+            var result = CheckByIdIfItemExist(category.Id);
+            if (CheckByIdIfItemExist(category.Id) is null)
             {
-                if (p.Id == category.Id)
-                {
-                    p.CategoryName = category.CategoryName;
-                    
-                    p.Description = category.Description;
-                }
-            });
-            if (!check)
-            {
-                return NotFound();// 404
+                return NotFound();
             }
+
+            try
+            {
+
+                
+                result.Description = category.Description;
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);
+            }
+
             return Ok();
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            bool check = false;
-            for (int i = 0; i < InMemoryDal.MemoryDal.CategoryList.Count; i++)
+            var result = CheckByIdIfItemExist(id);
+
+            if (result is null)
             {
-                if (InMemoryDal.MemoryDal.CategoryList[i].Id == id)
-                {
-                    check = true;
-                    InMemoryDal.MemoryDal.CategoryList.Remove(InMemoryDal.MemoryDal.CategoryList[i]);
-                }
+                return BadRequest();
+            }
+            try
+            {
+                InMemoryDal.MemoryDal.CategoryList.Remove(result);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);
             }
 
-            if (!check)
-            {
-                return NotFound();
-            }
+
+
             return Ok();//200
 
         }
 
+        private Category CheckByIdIfItemExist(int id)
+        {
 
+            var temp = InMemoryDal.MemoryDal.CategoryList.SingleOrDefault(p => p.Id == id);
+            if (temp is not null)
+            {
+                return temp;
+            }
+            return null;
+
+        }
 
     }
 }

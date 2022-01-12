@@ -22,9 +22,8 @@ namespace WebApi.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-
-            ProductDetail result = InMemoryDal.MemoryDal.ProductDetailList.SingleOrDefault(p => p.Id == id);
-            if (result != null)
+            var result = CheckByIdIfItemExist(id);
+            if (result is not null)
             {
                 return Ok(result);
             }
@@ -35,18 +34,12 @@ namespace WebApi.Controllers
         [HttpPost()]
         public IActionResult Create([FromBody] ProductDetail productDetail)
         {
-            bool check = true;
-            InMemoryDal.MemoryDal.ProductDetailList.ForEach(p =>
-            {
-                if (p.Id == productDetail.Id)
-                {
-                    check = false;
-                }
-            });
-            if (!check)
+            var result = CheckByIdIfItemExist(productDetail.Id);
+            if (result is not null)
             {
                 return BadRequest();
             }
+
             try
             {
                 InMemoryDal.MemoryDal.ProductDetailList.Add(productDetail);
@@ -54,71 +47,94 @@ namespace WebApi.Controllers
             catch (Exception)
             {
 
-                return StatusCode(500);//500
+                return StatusCode(500); //500
             }
-
-            return Created("Index", new { time = DateTime.Now });//201
+            return Created("Index", new { message = "ProductDetails added.", time = DateTime.Now });//201
 
         }
+
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] ProductDetail productDetail)
         {
-            bool check = true;
-            InMemoryDal.MemoryDal.ProductDetailList.ForEach(p =>
-            {
-                if (p.Id == productDetail.Id)
-                {
-                    p.UnitInStock = productDetail.UnitInStock;
-                    p.UnitOnOrder = productDetail.UnitOnOrder;
-                    p.UnitPrice = productDetail.UnitPrice;
-                    p.Description = productDetail.Description;
-                    p.QuantityPerUnit = productDetail.QuantityPerUnit;
-                }
-            });
-            if (!check)
+            var result = CheckByIdIfItemExist(productDetail.Id);
+            if (CheckByIdIfItemExist(productDetail.Id) is null)
             {
                 return NotFound();
             }
+
+            try
+            {
+                result.UnitInStock = productDetail.UnitInStock;
+                result.UnitOnOrder = productDetail.UnitOnOrder;
+                result.UnitPrice = productDetail.UnitPrice;
+                result.Description = productDetail.Description;
+                result.QuantityPerUnit = productDetail.QuantityPerUnit;
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);
+            }
+
             return Ok();
+            
 
         }
 
         [HttpPatch("{id}")]
         public IActionResult Update([FromBody] ProductDetail productDetail)
         {
-            bool check = true;
-            InMemoryDal.MemoryDal.ProductDetailList.ForEach(p =>
+            var result = CheckByIdIfItemExist(productDetail.Id);
+            if (CheckByIdIfItemExist(productDetail.Id) is null)
             {
-                if (p.Id == productDetail.Id)
-                {
-                    p.Description = productDetail.Description;
-                }
-            });
-            if (!check)
-            {
-                return NotFound();// 404
+                return NotFound();
             }
+
+            try
+            {
+                result.UnitPrice = productDetail.UnitPrice;
+           
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);
+            }
+
             return Ok();
         }
 
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            bool check = false;
-            for (int i = 0; i < InMemoryDal.MemoryDal.ProductDetailList.Count; i++)
-            {
-                if (InMemoryDal.MemoryDal.ProductDetailList[i].Id == id)
-                {
-                    check = true;
-                    InMemoryDal.MemoryDal.ProductDetailList.Remove(InMemoryDal.MemoryDal.ProductDetailList[i]);
-                }
-            }
+            var result = CheckByIdIfItemExist(id);
 
-            if (!check)
+            if (result is null)
             {
-                return NotFound();
+                return BadRequest();
+            }
+            try
+            {
+                InMemoryDal.MemoryDal.ProductDetailList.Remove(result);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);
             }
             return Ok();//200
+
+        }
+
+        private ProductDetail CheckByIdIfItemExist(int id)
+        {
+
+            var temp = InMemoryDal.MemoryDal.ProductDetailList.SingleOrDefault(p => p.Id == id);
+            if (temp is not null)
+            {
+                return temp;
+            }
+            return null;
 
         }
 
