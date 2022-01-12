@@ -15,25 +15,28 @@ namespace WebApi.Controllers
         [HttpGet]
         public IActionResult Get()
         {
-            
-            return Ok(InMemoryDal.MemoryDal.productList);
+
+            return Ok(InMemoryDal.MemoryDal.ProductList);
         }
 
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            Product result = InMemoryDal.MemoryDal.productList.SingleOrDefault(p => p.Id == id);
-            if (result !=null)
+
+            Product result = InMemoryDal.MemoryDal.ProductList.SingleOrDefault(p => p.Id == id);
+            if (result != null)
             {
                 return Ok(result);
             }
             return NoContent();// return 204 
         }
-        [HttpPost]
+    
+
+        [HttpPost()]
         public IActionResult Create([FromBody]Product product)
         {
             bool check = true;
-            InMemoryDal.MemoryDal.productList.ForEach(p =>
+            InMemoryDal.MemoryDal.ProductList.ForEach(p =>
             {
                 if (p.Id == product.Id)
                 {
@@ -44,17 +47,28 @@ namespace WebApi.Controllers
             {
                 return BadRequest();
             }
-            return Created("",new { time = DateTime.Now });
+            try
+            {
+                InMemoryDal.MemoryDal.ProductList.Add(product);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);//500
+            }
+          
+            return Created("Index",new { time = DateTime.Now });//201
             
         }
-        [HttpPut]
-        public IActionResult Update([FromBody] Product product)
+        [HttpPut("{id}")]
+        public IActionResult Update(int id,[FromBody] Product product)
         {
             bool check = true;
-            InMemoryDal.MemoryDal.productList.ForEach(p =>
+            InMemoryDal.MemoryDal.ProductList.ForEach(p =>
             {
                 if (p.Id == product.Id)
                 {
+                    
                     p.ProductName = product.ProductName;
                     p.CategoryId = product.CategoryId;
                     p.PublishingDate = product.PublishingDate;
@@ -67,23 +81,49 @@ namespace WebApi.Controllers
             return Ok();
 
         }
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+
+        [HttpPatch("{id}")]
+        public IActionResult Update([FromBody] Product product)
         {
             bool check = true;
-            InMemoryDal.MemoryDal.productList.ForEach(p =>
+            InMemoryDal.MemoryDal.ProductList.ForEach(p =>
             {
-                if (p.Id == id)
+                if (p.Id == product.Id)
                 {
-                    InMemoryDal.MemoryDal.productList.Remove(p);
+                    p.ProductName = product.ProductName;
+                    p.CategoryId = product.CategoryId;
+                    p.PublishingDate = product.PublishingDate;
                 }
             });
             if (!check)
             {
-                return NotFound();
+                return NotFound();// 404
             }
             return Ok();
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            bool check = false;
+            for (int i = 0; i < InMemoryDal.MemoryDal.ProductList.Count; i++)
+            {
+                if (InMemoryDal.MemoryDal.ProductList[i].Id == id)
+                {
+                    check = true;
+                    InMemoryDal.MemoryDal.ProductList.Remove(InMemoryDal.MemoryDal.ProductList[i]);
+                }
+            }
+          
+            if (!check)
+            {
+                return NotFound();
+            }
+            return Ok();//200
 
         }
+        
+
+     
     }
 }
