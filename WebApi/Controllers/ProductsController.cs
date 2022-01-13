@@ -127,6 +127,12 @@ namespace WebApi.Controllers
 
         }
 
+        [HttpHead("{id}")]
+        public string PostHead(int id)
+        {
+            return "merhaba";
+        }
+
         private Product CheckByIdIfItemExist(int id)
         {
 
@@ -137,6 +143,44 @@ namespace WebApi.Controllers
             }
             return null;
 
+        }
+
+        /// <summary>
+        ///  Unauthorized request
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="authorization"></param>
+        /// <returns></returns>
+        [HttpGet("/panel/{authorization}")]
+        public IActionResult HowToReturn401(string authorization)
+        {
+            if (authorization=="user")
+            {
+                return Unauthorized();//401
+            }
+            return Ok();
+        }
+
+        /// <summary>
+        ///  Forbidden
+        /// </summary>
+        /// <param name="authorization"></param>
+        /// <returns></returns>
+        [HttpGet("/panel/vip/{authorization}")]
+        public IActionResult HowToReturn403(string authorization)
+        {
+            if (authorization == "user")
+            {
+                return StatusCode(403);// Forbidden
+            }
+            return Ok();
+        }
+
+        [HttpGet("/admin")]
+        public IActionResult HowToReturn503()
+        {
+          
+            return StatusCode(503);
         }
 
 
