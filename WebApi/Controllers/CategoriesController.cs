@@ -12,13 +12,22 @@ namespace WebApi.Controllers
     [ApiController]
     public class CategoriesController : ControllerBase
     {
+
+        /// <summary>
+        ///  Get all categories
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult Get()
         {
 
             return Ok(InMemoryDal.MemoryDal.CategoryList);
         }
-
+        /// <summary>
+        /// Get a specific category by id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -31,7 +40,11 @@ namespace WebApi.Controllers
             return NoContent();// return 204 
         }
 
-
+        /// <summary>
+        /// Create a new category
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
         [HttpPost()]
         public IActionResult Create([FromBody] Category category)
         {
@@ -54,6 +67,12 @@ namespace WebApi.Controllers
 
 
         }
+        /// <summary>
+        ///  Update a category
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="category"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] Category category)
         {
@@ -80,6 +99,11 @@ namespace WebApi.Controllers
 
         }
 
+        /// <summary>
+        /// Update the description of a category
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
         [HttpPatch("{id}")]
         public IActionResult Update([FromBody] Category category)
         {
@@ -128,7 +152,7 @@ namespace WebApi.Controllers
             return Ok();//200
 
         }
-
+     
         private Category CheckByIdIfItemExist(int id)
         {
 

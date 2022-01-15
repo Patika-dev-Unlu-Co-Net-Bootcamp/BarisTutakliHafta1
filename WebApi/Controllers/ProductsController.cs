@@ -12,6 +12,11 @@ namespace WebApi.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
+
+        /// <summary>
+        ///  Get all products
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult Get()
         {
@@ -19,6 +24,11 @@ namespace WebApi.Controllers
             return Ok(InMemoryDal.MemoryDal.ProductList);
         }
 
+        /// <summary>
+        /// Get a specific product by id.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -31,7 +41,11 @@ namespace WebApi.Controllers
         }
 
     
-
+        /// <summary>
+        /// Create a new product
+        /// </summary>
+        /// <param name="product"></param>
+        /// <returns></returns>
         [HttpPost()]
         public IActionResult Create([FromBody]Product product)
         {
@@ -51,16 +65,24 @@ namespace WebApi.Controllers
 
                 return StatusCode(500); //500
             }
+            // Return a message and the creation time of the product
             return Created("Index",new {message="Product added.", time = DateTime.Now });//201
             
         }
+
+        /// <summary>
+        /// Update a product
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="product"></param>
+        /// <returns></returns>
         [HttpPut("{id}")]
         public IActionResult Update(int id,[FromBody] Product product)
         {
             var result = CheckByIdIfItemExist(id);
             if (CheckByIdIfItemExist(product.Id) is  null)
             {
-                return NotFound();
+                return NotFound();//404
             }
            
             try
@@ -80,6 +102,11 @@ namespace WebApi.Controllers
 
         }
 
+        /// <summary>
+        /// Update a product
+        /// </summary>
+        /// <param name="product"></param>
+        /// <returns></returns>
         [HttpPatch("{id}")]
         public IActionResult Update([FromBody] Product product)
         {
@@ -102,6 +129,11 @@ namespace WebApi.Controllers
             return Ok();
         }
 
+        /// <summary>
+        ///  Delete a product
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
@@ -183,7 +215,44 @@ namespace WebApi.Controllers
             return StatusCode(503);
         }
 
+        [HttpGet("sortAscById")]
+        public IActionResult SortAscById()
+        {
+            List<Product> temp;
+            try
+            {
+                temp = InMemoryDal.MemoryDal.ProductList.OrderBy(p => p.Id).ToList();
+            }
+            catch (Exception)
+            {
 
+                return StatusCode(500);
+            }
+            if (temp.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(temp);
+        }
+        [HttpGet("sortDescById")]
+        public IActionResult SortDescById()
+        {
+            List<Product> temp;
+            try
+            {
+                temp = InMemoryDal.MemoryDal.ProductList.OrderByDescending(p => p.Id).ToList();
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(500);
+            }
+            if (temp.Count==0)
+            {
+                return NotFound();
+            }
+            return Ok(temp);
+        }
 
     }
 }
